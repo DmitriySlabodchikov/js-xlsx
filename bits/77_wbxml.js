@@ -175,6 +175,21 @@ function write_wb_xml(wb, opts) {
     }
     o[o.length] = '</definedNames>';
   }
+  	var write_names = (wb.Workbook && (wb.Workbook.Names||[]).length > 0);
+	if(write_names) {
+		o[o.length] = "<definedNames>";
+		if(wb.Workbook && wb.Workbook.Names){ 
+			for(var i = 0; i<wb.Workbook.Names.length; i++){
+				var n = wb.Workbook.Names[i];
+				var d = {name:n.Name};
+				if(n.Comment) d.comment = n.Comment;
+				if(n.Sheet != null) d.localSheetId = ""+n.Sheet;
+				if(!n.Ref) return;
+				o[o.length] = writextag('definedName', String(n.Ref), d);
+			}
+		}
+		o[o.length] = "</definedNames>";
+	}
 
 	if(o.length>2){ o[o.length] = '</workbook>'; o[1]=o[1].replace("/>",">"); }
 	return o.join("");
