@@ -5613,7 +5613,7 @@ var rc_to_a1 = (function(){
 		return fstr.replace(rcregex, rcfunc);
 	};
 })();
-
+var crefregex = /(^|[^._A-Z0-9])([$]?)([A-Z]{1,2}|[A-W][A-Z]{2}|X[A-E][A-Z]|XF[A-D])([$]?)([1-9]\d{0,5}|10[0-3]\d{4}|104[0-7]\d{3}|1048[0-4]\d{2}|10485[0-6]\d|104857[0-6])(?![_.\(A-Za-z0-9])/g;
 /* --- formula references point to MS-XLS --- */
 /* Small helpers */
 function parseread(l) { return function(blob, length) { blob.l+=l; return; }; }
@@ -7813,6 +7813,7 @@ var parse_ws_xml_data = (function parse_ws_xml_data_factory() {
   var rregex = /r=["']([^"']*)["']/, isregex = /<is>([\S\s]*?)<\/is>/;
   var match_v = matchtag("v"), match_f = matchtag("f");
 
+
   return function parse_ws_xml_data(sdata, s, opts, guess) {
 
     var ri = 0, x = "", cells = [], cref = [], idx = 0, i = 0, cc = 0, d = "", p;
@@ -7820,6 +7821,20 @@ var parse_ws_xml_data = (function parse_ws_xml_data_factory() {
     var sstr;
     var fmtid = 0, fillid = 0, do_format = Array.isArray(styles.CellXf), cf;
     var rows = [], rowobj = {}, rowrite = false;
+    var arrayf = [];
+	var sharedf = [];
+
+	/* no defined name can collide with a valid cell address A1:XFD1048576 ... except LOG10! */
+	function shift_formula_str(f, delta) {
+		return f.replace(crefregex, function($0, $1, $2, $3, $4, $5, off, str) {
+			return $1+($2=="$" ? $2+$3 : encode_col(decode_col($3)+delta.c))+($4=="$" ? $4+$5 : encode_row(decode_row($5) + delta.r));
+		});
+	}
+	function shift_formula_xlsx(f, range, cell) {
+		var r = decode_range(range), s = r.s, c = decode_cell(cell);
+		var delta = {r:c.r - s.r, c:c.c - s.c};
+		return shift_formula_str(f, delta);
+	}
 
     for (var marr = sdata.split(rowregex), mt = 0, marrlen = marr.length; mt != marrlen; ++mt) {
       x = marr[mt].trim();
@@ -7845,8 +7860,12 @@ var parse_ws_xml_data = (function parse_ws_xml_data_factory() {
 
       /* 18.3.1.4 c CT_Cell */
       cells = x.substr(ri).split(cellregex);
+
       for (ri = typeof tag.r === 'undefined' ? 0 : 1; ri != cells.length; ++ri) {
         x = cells[ri].trim();
+
+       // if(x.indexOf("D13")!==-1) debugger
+
         if (x.length === 0) continue;
         cref = x.match(rregex);
         idx = ri;
@@ -7871,8 +7890,33 @@ var parse_ws_xml_data = (function parse_ws_xml_data_factory() {
         p = {t: ""};
 
         if ((cref = d.match(match_v)) !== null && cref[1] !== '') p.v = unescapexml(cref[1]);
-        if (opts.cellFormula && (cref = d.match(match_f)) !== null){
-        	p.f = unescapexml(cref[1]);
+        if (opts.cellFormula){
+        	//p.f = unescapexml(cref[1]); //simple inline formulas
+
+        	//detection of simple, array and shared formulas
+        	if((cref=d.match(match_f))!= null && cref[1] !== '') {
+				/* TODO: match against XLSXFutureFunctions */
+				p.f=unescapexml(utf8read(cref[1])).replace(/_xlfn\./,"");
+				if(cref[0].indexOf('t="array"') > -1) {
+					p.F = (d.match(refregex)||[])[1];
+					if(p.F.indexOf(":") > -1) arrayf.push([safe_decode_range(p.F), p.F]);
+				} else if(cref[0].indexOf('t="shared"') > -1) {
+					// TODO: parse formula
+					ftag = parsexmltag(cref[0]);
+					sharedf[parseInt(ftag.si, 10)] = [ftag, unescapexml(utf8read(cref[1]))];
+				}
+			} 
+			else if((cref=d.match(/<f[^>]*\/>/))) {
+				ftag = parsexmltag(cref[0]);
+				if(sharedf[ftag.si])
+					p.f = shift_formula_xlsx(sharedf[ftag.si][1], sharedf[ftag.si][0].ref, tag.r);
+			}
+
+			var _tag = decode_cell(tag.r);
+				for(i = 0; i < arrayf.length; ++i)
+					if(_tag.r >= arrayf[i][0].s.r && _tag.r <= arrayf[i][0].e.r)
+						if(_tag.c >= arrayf[i][0].s.c && _tag.c <= arrayf[i][0].e.c)
+							p.F = arrayf[i][1];
         }
         /* SCHEMA IS ACTUALLY INCORRECT HERE.  IF A CELL HAS NO T, EMIT "" */
         if (tag.t === undefined && p.v === undefined) {
@@ -8821,8 +8865,8 @@ function write_wb_xml(wb, opts) {
         if (printColumns && printHeader)  range += ","
         if (printHeader) range += ("'" + sheetName + "'!" ) +  ("$" + printHeader[0] + ":$" + printHeader[1]);
 
-        console.log("-----------------------------")
-        console.log(range)
+        //console.log("-----------------------------")
+        //console.log(range)
         o[o.length] = (writextag('definedName', range, {
           "name":"_xlnm.Print_Titles",
           localSheetId : ''+i
