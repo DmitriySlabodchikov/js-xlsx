@@ -12645,8 +12645,7 @@ var XmlNode = (function () {
             return numFmtIdx; // we found a match against built in formats
           }
         }
-
-        if (/^[0-9]+$/.exec(numFmt)) {
+        else {
           return numFmt; // we're matching an integer against some known code
         }
         numFmt = numFmt
