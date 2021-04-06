@@ -7730,6 +7730,8 @@ function write_ws_xml_cols(ws, cols) {
   for (var i = 0; i != cols.length; ++i) {
     if (!(col = cols[i])) continue;
     var p = {min: i + 1, max: i + 1};
+    if(col.hidden)
+        p.hidden=1;
     /* wch (chars), wpx (pixels) */
     width = -1;
     if (col.wpx) width = px2char(col.wpx);
@@ -7858,6 +7860,7 @@ var parse_ws_xml_data = (function parse_ws_xml_data_factory() {
       if(opts && opts.cellStyles) {
 			rowobj = {}; rowrite = false;
 			if(tag.ht) { rowrite = true; rowobj.hpt = parseFloat(tag.ht); rowobj.hpx = rowobj.hpt/0.75; }
+			if(tag.hidden) { rowrite = true; rowobj.hidden = "1"; }
 			if(rowrite) rows[tagr-1] = rowobj;
 		}
 
@@ -8014,6 +8017,8 @@ function write_ws_xml_data(ws, opts, idx, wb) {
 		var params = ({r:rr});
 		if(rows && rows[R]) {
 			var row = rows[R];
+			if (row.hidden)
+				params.hidden = 1;
 			var height = -1;
 			if (row.hpt) height = row.hpt;
 			if (height > -1) { params.ht = height; params.customHeight = 1; }
@@ -8025,6 +8030,8 @@ function write_ws_xml_data(ws, opts, idx, wb) {
 	if(rows && rows[R]) {
 		var params = ({r:R+1});
 		var row = rows[R];
+		if (row.hidden)
+			params.hidden = 1;
 		var height = -1;
 		if (row.hpt) height = row.hpt;
 		if (height > -1) { params.ht = height; params.customHeight = 1; }
