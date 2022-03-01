@@ -7765,7 +7765,6 @@ function write_ws_xml_cell(cell, ref, ws, opts, idx, wb) {
     case 'd':
       if (opts.cellDates) vv = new Date(cell.v).toISOString();
       else {
-        cell.t = 'n';
         vv = '' + (cell.v = datenum(cell.v));
         if (typeof cell.z === 'undefined') cell.z = SSF._table[14];
       }
@@ -7969,7 +7968,6 @@ var parse_ws_xml_data = (function parse_ws_xml_data_factory() {
           case 'd':
             if (!opts.cellDates) {
               p.v = datenum(p.v);
-              p.t = 'n';
             }
             break;
             /* error string in .v, number in .v */
@@ -7991,7 +7989,12 @@ var parse_ws_xml_data = (function parse_ws_xml_data_factory() {
           }
         }
         safe_format(p, fmtid, fillid, opts);
-        if(opts.cellDates && do_format && p.t == 'n' && SSF.is_date(SSF._table[fmtid])) { p.t = 'd'; p.v = numdate(p.v); }
+
+        if(do_format && SSF.is_date(SSF._table[fmtid]) && (p.t == "n" || p.t == "d")){
+          if(opts.cellDates) p.v = numdate(p.v);
+          p.t = "d";
+        }
+
         s[tag.r] = p;
       }
     }
