@@ -1324,7 +1324,7 @@ function evert_arr(obj) {
 	}
 	return o;
 }
-var basedate = new Date(1899, 11, 30, 0, 0, 0);
+var basedate = new Date(-2209161600000);
 function datenum(v,date1904){
 	var epoch = v.getTime();if(date1904)epoch -= 1462*24*60*60*1000;
 	var dnthresh = basedate.getTime() + (v.getTimezoneOffset() - basedate.getTimezoneOffset()) * 60000;
