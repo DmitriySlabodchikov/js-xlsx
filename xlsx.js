@@ -7618,7 +7618,7 @@ function parse_ws_xml(data, opts, rels) {
   var ridx = data.indexOf("<dimension");
   if (ridx > 0) {
     var ref = data.substr(ridx, 50).match(dimregex);
-    if (ref != null) parse_ws_xml_dim(s, ref[1]);
+    if (ref != null) parse_ws_xml_dim(s,"A1:"+ref[1].split(":")[1]);
   }
 
   /* 18.3.1.55 mergeCells CT_MergeCells */
@@ -7646,7 +7646,7 @@ function parse_ws_xml(data, opts, rels) {
   /* 18.3.1.48 hyperlinks CT_Hyperlinks */
   if (data.indexOf("</hyperlinks>") !== -1) parse_ws_xml_hlinks(s, data.match(hlinkregex), rels);
 
-  if (!s["!ref"] && refguess.e.c >= refguess.s.c && refguess.e.r >= refguess.s.r) s["!ref"] = encode_range(refguess);
+  if (!s["!ref"] && refguess.e.c >= refguess.s.c && refguess.e.r >= refguess.s.r) s["!ref"]="A1:"+encode_range(refguess).split(":")[1];
   if (opts.sheetRows > 0 && s["!ref"]) {
     var tmpref = safe_decode_range(s["!ref"]);
     if (opts.sheetRows < +tmpref.e.r) {
@@ -10083,6 +10083,7 @@ function parse_workbook(blob, options) {
 					if(range.e) {
 						out["!range"] = range;
 						if(range.e.r > 0 && range.e.c > 0) {
+							range.s.r=0;range.s.c=0;
 							range.e.r--; range.e.c--;
 							out["!ref"] = encode_range(range);
 							range.e.r++; range.e.c++;
