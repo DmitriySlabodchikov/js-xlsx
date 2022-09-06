@@ -8844,6 +8844,8 @@ function write_wb_xml(wb, opts) {
 	o[o.length] = WB_XML_ROOT;
 	o[o.length] = (writextag('workbookPr', null, {date1904:safe1904(wb)}));
 	o[o.length] = "<sheets>";
+	if(!wb.Workbook.Sheets)
+		wb.Workbook.Sheets = wb.SheetNames.map(function(){ return {state:"visible"}; });
 	for(var i = 0; i != wb.SheetNames.length; ++i)
 		o[o.length] = (writextag('sheet',null,{name:wb.SheetNames[i].substr(0,31), sheetId:""+(i+1), "r:id":"rId"+(i+1), state:wb.Workbook.Sheets[i].state}));
 	o[o.length] = "</sheets>";
