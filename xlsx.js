@@ -7716,11 +7716,12 @@ function parse_ws_xml_cols(columns, cols) {
       seencol = true;
       find_mdw(+coll.width, coll);
     }
-    if (coll.width) {
+    if (coll.width && (typeof coll.customWidth == "undefined" || (coll.customWidth && coll.customWidth != "false"))) {
       coll.wpx = width2px(+coll.width);
       coll.wch = px2char(coll.wpx);
       coll.MDW = MDW;
     }
+    if(coll.hidden == "false") coll.hidden = false;
     while (colm <= colM) columns[colm++] = coll;
   }
 }
@@ -7858,7 +7859,12 @@ var parse_ws_xml_data = (function parse_ws_xml_data_factory() {
 
       if(opts && opts.cellStyles) {
 			rowobj = {}; rowrite = false;
-			if(tag.ht) { rowrite = true; rowobj.hpt = parseFloat(tag.ht); rowobj.hpx = rowobj.hpt/0.75; }
+			if(tag.ht && (typeof tag.customHeight == "undefined" || (tag.customHeight && tag.customHeight != "false"))) {
+				rowrite = true;
+				rowobj.hpt = parseFloat(tag.ht);
+				rowobj.hpx = rowobj.hpt/0.75;
+			}
+	      		if(tag.hidden == "false") tag.hidden = false;
 			if(tag.hidden) { rowrite = true; rowobj.hidden = "1"; }
 			if(rowrite) rows[tagr-1] = rowobj;
 		}
