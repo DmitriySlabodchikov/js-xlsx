@@ -7909,7 +7909,7 @@ var parse_ws_xml_data = (function parse_ws_xml_data_factory() {
 				/* TODO: match against XLSXFutureFunctions */
 				p.f=unescapexml(utf8read(cref[1])).replace(/_xlfn\./,"");
 				if(cref[0].indexOf('t="array"') > -1) {
-					p.F = (d.match(refregex)||[])[1];
+					p.F = (d.match(/ref=["']([^"']*)["']/)||[])[1];
 					if(p.F.indexOf(":") > -1) arrayf.push([safe_decode_range(p.F), p.F]);
 				} else if(cref[0].indexOf('t="shared"') > -1) {
 					// TODO: parse formula
