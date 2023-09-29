@@ -7807,7 +7807,7 @@ function write_ws_xml_cell(cell, ref, ws, opts, idx, wb) {
     cell.v = oldv;
   }
     if(cell.f) {//main
-		var ff = cell.F && cell.F.substr(0, ref.length) == ref ? {t:"array", ref:cell.F} : null;
+		var ff = cell.F ? {t:"array", ref:cell.F} : null;
 		v = writextag('f', escapexml(cell.f), ff) + (cell.v != null ? v : "");
 	}
   return writextag('c', v, o);
