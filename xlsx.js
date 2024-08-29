@@ -7796,7 +7796,7 @@ function write_ws_xml_cols(ws, cols) {
 function write_ws_xml_cell(cell, ref, ws, opts, idx, wb) {
   //if (cell.v === undefined && cell.s === undefined && !cell.f) return ""; //patch
 
-  if(cell.v === undefined && cell.f === undefined || cell.t === 'z') return "";
+  if(cell.v === undefined && cell.f === undefined) return "";
   var vv = "";
   var oldt = cell.t, oldv = cell.v;
   switch (cell.t) {
@@ -7821,7 +7821,7 @@ function write_ws_xml_cell(cell, ref, ws, opts, idx, wb) {
       break;
   }
 
-    var v = writetag('v', escapexml(vv)), o = {r: ref};// old
+    var v = vv === "" && cell.t == "z" ? "" : writetag('v', escapexml(vv)), o = {r: ref};// old
  	// var o = { r: ref }; //patch
 	// var v = cell.f ? writetag('f', escapexml(cell.f)) : writetag('v', escapexml(vv));
   /* TODO: cell style */
