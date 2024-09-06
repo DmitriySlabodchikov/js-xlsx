@@ -8109,35 +8109,9 @@ function write_ws_xml(idx, opts, wb) {
   var ref = ws['!ref'];
   if (ref === undefined) ref = 'A1';
   o[o.length] = (writextag('dimension', null, {'ref': ref}));
-
-  var kids = [];
-  if (ws['!freeze']) {
-    var pane = '';
-    pane = writextag('pane', null, ws['!freeze'])
-    kids.push(pane)
-
-    var selection = writextag('selection', null, {
-      pane: "topLeft"
-    })
-    kids.push(selection)
-
-    var selection = writextag('selection', null, {
-      pane: "bottomLeft"
-    })
-    kids.push(selection)
-
-    var selection = writextag('selection', null, {
-      pane: "bottomRight",
-      activeCell: ws['!freeze'],
-      sqref: ws['!freeze']
-    })
-    kids.push(selection)
-  }
-
-
-//<selection pane="bottomRight" activeCell="A4" sqref="A4"/>
-
-  var sheetView = writextag('sheetView', kids.join('') || undefined, {
+  var pane = '';
+  if (ws['!freeze']) pane = writextag('pane',null, ws['!freeze']);
+  var sheetView = writextag('sheetView', pane, {
     showGridLines: opts.showGridLines == false ? '0' : '1',
     tabSelected: opts.tabSelected === undefined ? '0' : opts.tabSelected,  // see issue #26, need to set WorkbookViews if this is set
     workbookViewId: opts.workbookViewId === undefined ? '0' : opts.workbookViewId
