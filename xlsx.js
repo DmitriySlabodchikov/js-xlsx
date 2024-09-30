@@ -7652,19 +7652,42 @@ function parse_ws_xml_dim(ws, s) {
 var mergecregex = /<mergeCell ref="[A-Z0-9:]+"\s*\/>/g;
 var sheetdataregex = /<(?:\w+:)?sheetData>([^\u2603]*)<\/(?:\w+:)?sheetData>/;
 var hlinkregex = /<hyperlink[^>]*\/>/g;
-var dimregex = /"(\w*:\w*)"/;
+var dimregex = /"(\w*:\w*|[A-Z]*[0-9]*)"/;
 var colregex = /<col[^>]*\/>/g;
 /* 18.3 Worksheets */
 function parse_ws_xml(data, opts, rels) {
   if (!data) return data;
   /* 18.3.1.99 worksheet CT_Worksheet */
   var s = {};
-
+  if(data.indexOf("<sheetView ") != -1){
+    var settings = s["!settings"] = {};
+    var sheetView = data.match(/<sheetView \s*.*?>/)[0];
+    sheetView.match(/([a-zA-Z]+)(?:="([\s\S]+?)"(?:\/>|\s))?/g).forEach(v => {
+      v = v.split("=");
+      switch(v[0]){
+        case "showGridLines":
+          settings.showGridLines = !/false|0/.test(v[1]);
+          break;
+        case "showRowColHeaders":
+          settings.showRowColHeaders = !/false|0/.test(v[1]);
+          break;
+        case "zoomScale":
+          settings.zoomScale = v[1].match(/\d+/)[0];
+          break;
+        case "showFormulas":
+          settings.showFormulas = /true|1/.test(v[1]);
+          break;
+        }
+    });
+  }
   /* 18.3.1.35 dimension CT_SheetDimension ? */
   var ridx = data.indexOf("<dimension");
   if (ridx > 0) {
     var ref = data.substr(ridx, 50).match(dimregex);
-    if (ref != null) parse_ws_xml_dim(s,"A1:"+ref[1].split(":")[1]);
+    if (ref != null){
+      const splitRef = ref[1].split(":");
+      parse_ws_xml_dim(s, "A1:" + (splitRef[1] ? splitRef[1] : splitRef[0]));
+    }
   }
 
   /* 18.3.1.55 mergeCells CT_MergeCells */
@@ -8111,8 +8134,12 @@ function write_ws_xml(idx, opts, wb) {
   o[o.length] = (writextag('dimension', null, {'ref': ref}));
   var pane = '';
   if (ws['!freeze']) pane = writextag('pane',null, ws['!freeze']);
+  var settings = ws["!settings"] || {};
   var sheetView = writextag('sheetView', pane, {
-    showGridLines: opts.showGridLines == false ? '0' : '1',
+    showGridLines: settings.showGridLines == false ? '0' : '1',
+    showRowColHeaders: settings.showRowColHeaders == false ? "0" : "1",
+    zoomScale: settings.zoomScale || 100,
+    showFormulas: settings.showFormulas || "0",
     tabSelected: opts.tabSelected === undefined ? '0' : opts.tabSelected,  // see issue #26, need to set WorkbookViews if this is set
     workbookViewId: opts.workbookViewId === undefined ? '0' : opts.workbookViewId
   });
