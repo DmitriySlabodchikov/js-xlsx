@@ -5383,6 +5383,26 @@ function parse_themeElements(data, opts) {
 		if(!(t=data.match(m[1]))) throw m[0] + ' not found in themeElements';
 		m[2](t, opts);
 	});
+
+	const defaultColors = {
+		"lt1": "FFFFFFFF",
+		"dk1": "FF000000", 
+		"lt2": "FFE7E6E6",
+		"dk2": "FF44546A",
+		"accent1": "FF4472C4",
+		"accent2": "FFED7D31",
+		"accent3": "FFA5A5A5",
+		"accent4": "FFFFC000",
+		"accent5": "FF5B9BD5",
+		"accent6": "FF70AD47",
+		"hlink": "FF0563C1",
+		"folHlink": "FF954F72"
+	};
+
+	themes.themeElements.clrScheme.forEach(colorObj => {
+		if (!colorObj.rgb)
+			colorObj.rgb = defaultColors[colorObj.name] || "FFFFFFFF";
+	});
 }
 
 var themeltregex = /<a:themeElements([^>]*)>[^\u2603]*<\/a:themeElements>/;
