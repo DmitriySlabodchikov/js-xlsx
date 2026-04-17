@@ -7820,6 +7820,8 @@ function write_ws_xml_cols(ws, cols) {
   for (var i = 0; i != cols.length; ++i) {
     if (!(col = cols[i])) continue;
     var p = {min: i + 1, max: i + 1};
+	if(col.outlineLevel)
+		p.outlineLevel = col.outlineLevel;
     if(col.hidden)
         p.hidden=1;
     /* wch (chars), wpx (pixels) */
@@ -7929,7 +7931,7 @@ var parse_ws_xml_data = (function parse_ws_xml_data_factory() {
 		var delta = {r:c.r - s.r, c:c.c - s.c};
 		return shift_formula_str(f, delta);
 	}
-
+	sdata = sdata.replace(/<((?:\w+:)?row)([^>]*?)\s*\/>/g, '<$1$2></$1>');
     for (var marr = sdata.split(rowregex), mt = 0, marrlen = marr.length; mt != marrlen; ++mt) {
       x = marr[mt].trim();
       var xlen = x.length;
@@ -7948,6 +7950,10 @@ var parse_ws_xml_data = (function parse_ws_xml_data_factory() {
 
       if(opts && opts.cellStyles) {
 			rowobj = {}; rowrite = false;
+		  	if(tag.outlineLevel){
+				rowrite = true;
+				rowobj.outlineLevel = tag.outlineLevel;
+			}
 			if(tag.ht && tag.customHeight && tag.customHeight != "false") {
 				rowrite = true;
 				rowobj.hpt = parseFloat(tag.ht);
@@ -8115,6 +8121,8 @@ function write_ws_xml_data(ws, opts, idx, wb) {
 		var params = ({r:rr});
 		if(rows && rows[R]) {
 			var row = rows[R];
+			if(row.outlineLevel)
+				params.outlineLevel = row.outlineLevel;
 			if (row.hidden)
 				params.hidden = 1;
 			var height = -1;
@@ -8128,6 +8136,8 @@ function write_ws_xml_data(ws, opts, idx, wb) {
 	if(rows && rows[R]) {
 		var params = ({r:R+1});
 		var row = rows[R];
+		if(row.outlineLevel)
+			params.outlineLevel = row.outlineLevel;
 		if (row.hidden)
 			params.hidden = 1;
 		var height = -1;
