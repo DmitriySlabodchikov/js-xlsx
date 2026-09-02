@@ -7735,7 +7735,7 @@ function parse_ws_xml(data, opts, rels) {
   /* 18.3.1.48 hyperlinks CT_Hyperlinks */
   if (data.indexOf("</hyperlinks>") !== -1) parse_ws_xml_hlinks(s, data.match(hlinkregex), rels);
 
-  if (!s["!ref"] && refguess.e.c >= refguess.s.c && refguess.e.r >= refguess.s.r) s["!ref"]="A1:"+encode_range(refguess).split(":")[1];
+  if (!s["!ref"] && refguess.e.c >= refguess.s.c && refguess.e.r >= refguess.s.r) s["!ref"]="A1:"+(encode_range(refguess).split(":")[1]||"A1");
   if (opts.sheetRows > 0 && s["!ref"]) {
     var tmpref = safe_decode_range(s["!ref"]);
     if (opts.sheetRows < +tmpref.e.r) {
