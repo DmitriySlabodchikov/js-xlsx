@@ -12690,6 +12690,9 @@ var XmlNode = (function () {
         if (numFmtId > 0) {
           $xf.attr('applyNumberFormat', "1");
         }
+		if (attributes.quotePrefix) {
+		  $xf.attr('quotePrefix', "1");
+		}
 
         if (attributes.alignment) {
           var $alignment = XmlNode('alignment');
