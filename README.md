@@ -537,8 +537,8 @@ The exported `write` and `writeFile` functions accept an options argument:
 
 ## Cell Styles
 
-Cell styles are specified by a style object that roughly parallels the OpenXML structure.  The style object has five
-top-level attributes: `fill`, `font`, `numFmt`, `alignment`, and `border`.
+Cell styles are specified by a style object that roughly parallels the OpenXML structure.  The style object has six
+top-level attributes: `fill`, `font`, `numFmt`, `alignment`, `border`, and `quotePrefix` .
 
 
 | Style Attribute | Sub Attributes | Values |
@@ -578,6 +578,7 @@ top-level attributes: `fill`, `font`, `numFmt`, `alignment`, and `border`.
 |                 | diagonal       | `{ style: BORDER_STYLE, color: COLOR_SPEC }`
 |                 | diagonalUp     | `true` or `false`
 |                 | diagonalDown   | `true` or `false`
+| quotePrefix     |                |  `"1"` // treat cell content as text (equivalent to a leading apostrophe ' in Excel)
 
 **COLOR_SPEC**: Colors for `fill`, `font`, and `border` are specified as objects, either:
 * `{ auto: 1}` specifying automatic values
